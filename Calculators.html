@@ -49,28 +49,31 @@
    </div>
   </body>
  <script>
-  const nums = "0123456789";
+  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const nums    = "0123456789";
   let currententry = bientry, currentcalc = bicalc;
   setcalc(bientry, bicalc);
   let bivarinputs = bivars.getElementsByTagName("input");
   let fpvarinputs = fpvars.getElementsByTagName("input");
+  biinput.addEventListener("keydown", e => { if (event.keyCode == 13 && !event.shiftKey) { e.preventDefault(); bi_compute(); } })
+  fpinput.addEventListener("keydown", e => { if (event.keyCode == 13 && !event.shiftKey) { e.preventDefault(); fp_compute(); } })
   function setcalc(entry, calc){
    currententry.style.background = ""; currententry = entry; currententry.style.background = "#404040";
    currentcalc.style.display = "none"; currentcalc = calc;   currentcalc.style.display = "block";}
-   //BigInt
+  //BigInt
    function bi_compute(){
     let input = biinput.value.replaceAll("^", "**");
     let innum = false;
-    for (let i = 0; i < input.length+1; i++){
-     if      (nums.includes(input[i])  && !innum)                       { innum = true; input = input.slice(0, i) + "BigInt(" + input.slice(i); i += 8; }
-     if ((!nums.includes(input[i]) || input[i] == undefined) && innum)  { innum = false; input = input.slice(0, i) + ")" + input.slice(i); i++; } }
     let vars = "";
-    for (let i = 0; i < bivarinputs.length / 2; i++) { vars += `let ${bivarinputs[i*2+0].value} = BigInt(${bivarinputs[i*2+1].value});`; }
+    for (let i = 0; i < bivarinputs.length / 2; i++) { vars += `let ${bivarinputs[i*2+0].value} = ${bivarinputs[i*2+1].value};`; }
+    for (let i = 0; i < input.length+1; i++){
+     if (letters.includes(input[i])) { invar = true; } else if (!nums.includes(input[i])) { invar = false; }
+     if (nums.includes(input[i])  && !innum && !invar)                  { innum = true; input = input.slice(0, i) + "BigInt(" + input.slice(i); i += 8; }
+     if ((!nums.includes(input[i]) || input[i] == undefined) && innum)  { innum = false; input = input.slice(0, i) + ")" + input.slice(i); i++; } }
     //console.log(`'use strict'; ${vars} return ${input};`);
     try { bioutput.value = Function(`'use strict'; ${vars} return ${input};`)(); } catch (error) { bioutput.value = "Malformed expression or variable"; console.log(error); } }
    function bi_addvar(){
     let varname  = document.createElement("input"), varvalue = document.createElement("input"), xbutton  = document.createElement("div");
-    varname.addEventListener("beforeinput", e => { if (e.data != null) { for (let i = 0; i < e.data.length; i++) { if (nums.includes(e.data[i])) { e.preventDefault(); } } } });
     xbutton.innerText = "X"; xbutton.addEventListener("click", e => { varname.remove(); varvalue.remove(); xbutton.remove(); });
     bivars.appendChild(varname); bivars.appendChild(varvalue); bivars.appendChild(xbutton);}
   //Floating point
